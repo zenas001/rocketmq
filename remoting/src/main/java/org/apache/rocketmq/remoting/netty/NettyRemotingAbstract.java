@@ -270,6 +270,10 @@ public abstract class NettyRemotingAbstract {
         }
 
         try {
+            /**
+             * TODO step2  Request command to aysnc task processor
+             * {@link  org.apache.rocketmq.broker.processor.ClientManageProcessor#processRequest(ChannelHandlerContext, RemotingCommand)}
+             **/
             final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
             //async execute task, current thread return directly
             pair.getObject2().submit(requestTask);

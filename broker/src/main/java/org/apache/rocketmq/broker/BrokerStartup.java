@@ -16,12 +16,6 @@
  */
 package org.apache.rocketmq.broker;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
@@ -41,9 +35,17 @@ import org.apache.rocketmq.srvutil.ServerUtil;
 import org.apache.rocketmq.store.config.BrokerRole;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class BrokerStartup {
 
-    public static Logger log;
+    public static org.apache.rocketmq.logging.ch.qos.logback.classic.Logger  log;
+
     public static final SystemConfigFileHelper CONFIG_FILE_HELPER = new SystemConfigFileHelper();
 
     public static void main(String[] args) {
@@ -113,7 +115,6 @@ public class BrokerStartup {
             MixAll.properties2Object(properties, nettyClientConfig);
             MixAll.properties2Object(properties, messageStoreConfig);
         }
-
         MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), brokerConfig);
         if (null == brokerConfig.getRocketmqHome()) {
             System.out.printf("Please set the %s variable in your environment " +
@@ -173,8 +174,6 @@ public class BrokerStartup {
         }
 
         brokerConfig.setInBrokerContainer(false);
-
-        System.setProperty("brokerLogDir", "");
         if (brokerConfig.isIsolateLogEnable()) {
             System.setProperty("brokerLogDir", brokerConfig.getBrokerName() + "_" + brokerConfig.getBrokerId());
         }
@@ -198,7 +197,7 @@ public class BrokerStartup {
             System.exit(0);
         }
 
-        log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
+        log = (org.apache.rocketmq.logging.ch.qos.logback.classic.Logger) LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
         MixAll.printObjectProperties(log, brokerConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
         MixAll.printObjectProperties(log, nettyClientConfig);
