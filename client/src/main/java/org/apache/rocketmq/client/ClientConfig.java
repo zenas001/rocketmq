@@ -37,6 +37,7 @@ public class ClientConfig {
     private String namesrvAddr = NameServerAddressUtils.getNameServerAddresses();
     private String clientIP = RemotingUtil.getLocalAddress();
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
+    private Class<? extends RocketMQHeartBeatListener> heartBeatListener;
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
     protected String namespace;
     private boolean namespaceInitialized = false;
@@ -197,6 +198,14 @@ public class ClientConfig {
     public void setNamesrvAddr(String namesrvAddr) {
         this.namesrvAddr = namesrvAddr;
         this.namespaceInitialized = false;
+    }
+
+    public Class<? extends RocketMQHeartBeatListener> getHeartBeatListener() {
+        return heartBeatListener;
+    }
+
+    public void setHeartBeatListener(Class<? extends RocketMQHeartBeatListener> heartBeatListener) {
+        this.heartBeatListener = heartBeatListener;
     }
 
     public int getClientCallbackExecutorThreads() {
