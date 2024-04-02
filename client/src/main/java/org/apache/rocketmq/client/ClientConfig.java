@@ -37,7 +37,7 @@ public class ClientConfig {
     private String namesrvAddr = NameServerAddressUtils.getNameServerAddresses();
     private String clientIP = RemotingUtil.getLocalAddress();
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
-    private Class<? extends RocketMQHeartBeatListener> heartBeatListener;
+    private Class<? extends RocketMQHeartBeatHandler> heartBeatHandler;
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
     protected String namespace;
     private boolean namespaceInitialized = false;
@@ -180,6 +180,7 @@ public class ClientConfig {
         cc.namespace = namespace;
         cc.language = language;
         cc.mqClientApiTimeout = mqClientApiTimeout;
+        cc.heartBeatHandler = heartBeatHandler;
         return cc;
     }
 
@@ -200,12 +201,12 @@ public class ClientConfig {
         this.namespaceInitialized = false;
     }
 
-    public Class<? extends RocketMQHeartBeatListener> getHeartBeatListener() {
-        return heartBeatListener;
+    public Class<? extends RocketMQHeartBeatHandler> getHeartBeatHandler() {
+        return heartBeatHandler;
     }
 
-    public void setHeartBeatListener(Class<? extends RocketMQHeartBeatListener> heartBeatListener) {
-        this.heartBeatListener = heartBeatListener;
+    public void setHeartBeatHandler(Class<? extends RocketMQHeartBeatHandler> heartBeatHandler) {
+        this.heartBeatHandler = heartBeatHandler;
     }
 
     public int getClientCallbackExecutorThreads() {

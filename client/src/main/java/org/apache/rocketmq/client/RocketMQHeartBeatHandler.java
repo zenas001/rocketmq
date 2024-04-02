@@ -1,12 +1,12 @@
 package org.apache.rocketmq.client;
 
 /**
- *
+ * send heartbeat fail handler
  */
-public interface RocketMQHeartBeatListener {
+public interface RocketMQHeartBeatHandler {
     /**
      * @param addr target address
      * @param e    exc
      **/
-    void listen(String addr, Exception e);
+    void handle(String addr, Exception e);
 }

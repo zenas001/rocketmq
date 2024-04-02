@@ -18,7 +18,7 @@ package org.apache.rocketmq.client.impl.factory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.client.RocketMQHeartBeatListener;
+import org.apache.rocketmq.client.RocketMQHeartBeatHandler;
 import org.apache.rocketmq.client.admin.MQAdminExtInner;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -67,8 +67,6 @@ import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,6 +92,7 @@ public class MQClientInstance {
     private final ClientConfig clientConfig;
     private final int instanceIndex;
     private final String clientId;
+    private RocketMQHeartBeatHandler heartBeatListener=null;
     private final long bootTimestamp = System.currentTimeMillis();
     private final ConcurrentMap<String/* group */, MQProducerInner> producerTable = new ConcurrentHashMap<String, MQProducerInner>();
     private final ConcurrentMap<String/* group */, MQConsumerInner> consumerTable = new ConcurrentHashMap<String, MQConsumerInner>();
@@ -129,6 +128,13 @@ public class MQClientInstance {
 
     public MQClientInstance(ClientConfig clientConfig, int instanceIndex, String clientId, RPCHook rpcHook) {
         this.clientConfig = clientConfig;
+        if(this.clientConfig.getHeartBeatHandler()!=null){
+            try {
+                this.heartBeatListener= this.clientConfig.getHeartBeatHandler().newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+               log.error("init heartBeatListener fail :{}",e);
+            }
+        }
         this.instanceIndex = instanceIndex;
         this.nettyClientConfig = new NettyClientConfig();
         this.nettyClientConfig.setClientCallbackExecutorThreads(clientConfig.getClientCallbackExecutorThreads());
@@ -569,10 +575,8 @@ public class MQClientInstance {
                                 }
                             } catch (Exception e) {
                                 //list heart beat
-                                try {
-                                    doListen(e, addr);
-                                } catch (IllegalAccessException | InvocationTargetException | InstantiationException ex) {
-                                    log.info("send heart beat to broker[{} {} {}] listen failed ", brokerName, id, addr, e);
+                                if(this.heartBeatListener!=null){
+                                    this.heartBeatListener.handle(addr,e);
                                 }
                                 if (this.isBrokerInNameServer(addr)) {
                                     log.info("send heart beat to broker[{} {} {}] failed", brokerName, id, addr, e);
@@ -586,15 +590,6 @@ public class MQClientInstance {
                 }
             }
         }
-    }
-
-    private void doListen(Exception e, String addr) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        Class<? extends RocketMQHeartBeatListener> listenerClazz = this.clientConfig.getHeartBeatListener();
-        if (listenerClazz != null) {
-            Method method =listenerClazz.getMethods()[0];
-            method.invoke(listenerClazz.newInstance(),e,addr);
-        }
-
     }
 
     private void uploadFilterClassSource() {
