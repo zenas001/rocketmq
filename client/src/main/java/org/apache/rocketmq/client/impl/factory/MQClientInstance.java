@@ -18,7 +18,7 @@ package org.apache.rocketmq.client.impl.factory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.client.RocketMQHeartBeatHandler;
+import org.apache.rocketmq.client.RocketMQHeartBeatListener;
 import org.apache.rocketmq.client.admin.MQAdminExtInner;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -92,7 +92,7 @@ public class MQClientInstance {
     private final ClientConfig clientConfig;
     private final int instanceIndex;
     private final String clientId;
-    private RocketMQHeartBeatHandler heartBeatListener=null;
+    private RocketMQHeartBeatListener heartBeatListener = null;
     private final long bootTimestamp = System.currentTimeMillis();
     private final ConcurrentMap<String/* group */, MQProducerInner> producerTable = new ConcurrentHashMap<String, MQProducerInner>();
     private final ConcurrentMap<String/* group */, MQConsumerInner> consumerTable = new ConcurrentHashMap<String, MQConsumerInner>();
@@ -128,11 +128,11 @@ public class MQClientInstance {
 
     public MQClientInstance(ClientConfig clientConfig, int instanceIndex, String clientId, RPCHook rpcHook) {
         this.clientConfig = clientConfig;
-        if(this.clientConfig.getHeartBeatHandler()!=null){
+        if (this.clientConfig.getHeartBeatHandler() != null) {
             try {
-                this.heartBeatListener= this.clientConfig.getHeartBeatHandler().newInstance();
+                this.heartBeatListener = this.clientConfig.getHeartBeatHandler().newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-               log.error("init heartBeatListener fail :{}",e);
+                log.error("init heartBeatListener fail :{}", e);
             }
         }
         this.instanceIndex = instanceIndex;
@@ -562,7 +562,7 @@ public class MQClientInstance {
                                 if (id != MixAll.MASTER_ID)
                                     continue;
                             }
-
+                            Exception exception = null;
                             try {
                                 int version = this.mQClientAPIImpl.sendHearbeat(addr, heartbeatData, clientConfig.getMqClientApiTimeout());
                                 if (!this.brokerVersionTable.containsKey(brokerName)) {
@@ -574,15 +574,17 @@ public class MQClientInstance {
                                     log.info(heartbeatData.toString());
                                 }
                             } catch (Exception e) {
-                                //handle send heartbeat fail
-                                if(this.heartBeatListener!=null){
-                                    this.heartBeatListener.handle(addr,e);
-                                }
+                                exception = e;
                                 if (this.isBrokerInNameServer(addr)) {
                                     log.info("send heart beat to broker[{} {} {}] failed", brokerName, id, addr, e);
                                 } else {
                                     log.info("send heart beat to broker[{} {} {}] exception, because the broker not up, forget it", brokerName,
                                             id, addr, e);
+                                }
+                            } finally {
+                                //handle send heartbeat fail
+                                if (this.heartBeatListener != null) {
+                                    this.heartBeatListener.listen(addr, heartbeatData, exception);
                                 }
                             }
                         }
