@@ -271,7 +271,8 @@ public class DefaultLitePullConsumerImpl implements MQConsumerInner {
         return this.serviceState == ServiceState.RUNNING;
     }
 
-    public synchronized void start() throws MQClientException {
+    public synchronized void
+    start() throws MQClientException {
         switch (this.serviceState) {
             case CREATE_JUST:
                 this.serviceState = ServiceState.START_FAILED;

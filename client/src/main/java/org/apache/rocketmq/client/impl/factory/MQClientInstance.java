@@ -574,7 +574,7 @@ public class MQClientInstance {
                                     log.info(heartbeatData.toString());
                                 }
                             } catch (Exception e) {
-                                //list heart beat
+                                //handle send heartbeat fail
                                 if(this.heartBeatListener!=null){
                                     this.heartBeatListener.handle(addr,e);
                                 }

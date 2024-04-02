@@ -1,7 +1,7 @@
 package org.apache.rocketmq.client;
 
 /**
- * send heartbeat fail handler
+ * base send heartbeat fail handler
  */
 public interface RocketMQHeartBeatHandler {
     /**
