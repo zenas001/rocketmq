@@ -578,9 +578,13 @@ public class MQClientInstance {
                                             id, addr, e);
                                 }
                             } finally {
-                                //handle send heartbeat fail
+                                //listen send heartbeat
                                 if (this.heartBeatListener != null) {
-                                    this.heartBeatListener.listen(addr, heartbeatData, exception);
+                                    if(exception!=null){
+                                        this.heartBeatListener.fail(addr,heartbeatData,exception);
+                                    }else {
+                                        this.heartBeatListener.success(addr,heartbeatData);
+                                    }
                                 }
                             }
                         }
