@@ -129,11 +129,7 @@ public class MQClientInstance {
     public MQClientInstance(ClientConfig clientConfig, int instanceIndex, String clientId, RPCHook rpcHook) {
         this.clientConfig = clientConfig;
         if (this.clientConfig.getHeartBeatHandler() != null) {
-            try {
-                this.heartBeatListener = this.clientConfig.getHeartBeatHandler().newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                log.error("init heartBeatListener fail :{}", e);
-            }
+            this.heartBeatListener = this.clientConfig.getHeartBeatHandler();
         }
         this.instanceIndex = instanceIndex;
         this.nettyClientConfig = new NettyClientConfig();
